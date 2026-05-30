@@ -1,0 +1,4 @@
+model,cv_auroc,cv_ap,cv_rmse,test_auroc,test_ap,test_rmse,ci_coverage_raw,ci_coverage_sev,mean_pred_std_raw,mean_severity_std
+linear_regression,0.849±0.075,0.762±0.139,0.045±0.003,0.7899,0.7202,0.0558,1.0,1.0,0.5453,2.8438
+random_forest,0.836±0.085,0.740±0.115,0.049±0.006,0.7464,0.7419,0.0541,1.0,1.0,0.2625,1.369
+xgboost,0.853±0.076,0.774±0.127,0.049±0.007,0.7609,0.6694,0.0543,1.0,1.0,0.0949,0.4949
