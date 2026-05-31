@@ -177,7 +177,7 @@ metrics_text = textwrap.dedent(f"""
     Aim 4 — Logistic Regression Validation
     =======================================
     Input file     : {DATA_CSV.relative_to(ROOT)}
-    Score used     : pred_score  (Random Forest predicted MAVE functional score)
+    Score used     : pred_score  (Random Forest predicted score)
     Predictor (X)  : pred_score  (continuous; lower = more pathogenic)
     Outcome (y)    : ClinVar binary label  (1 = pathogenic, 0 = benign)
     N total        : {n_total}  ({n_path} pathogenic, {n_ben} benign)

@@ -1,7 +1,7 @@
 Aim 4 — Logistic Regression Validation
 =======================================
 Input file     : aim3/results/clinvar_predictions.csv
-Score used     : pred_score  (Random Forest predicted MAVE functional score)
+Score used     : pred_score  (Random Forest predicted score)
 Predictor (X)  : pred_score  (continuous; lower = more pathogenic)
 Outcome (y)    : ClinVar binary label  (1 = pathogenic, 0 = benign)
 N total        : 20  (10 pathogenic, 10 benign)

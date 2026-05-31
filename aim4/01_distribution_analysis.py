@@ -1,7 +1,7 @@
 """
 Aim 4 — Validation  |  2.4a Distribution Analysis
 ===================================================
-Compares the distribution of predicted MAVE scores (pred_score) between
+Compares the distribution of predicted scores (pred_score) between
 ClinVar-labelled pathogenic and benign BRCA1 missense variants.
 
 Tests
@@ -106,9 +106,9 @@ print(f"Median pred_score — pathogenic: {path_med:.4f}  benign: {ben_med:.4f}"
 
 stats_path = OUT_DIR / "distribution_stats.txt"
 stats_text = textwrap.dedent(f"""
-    Aim 4 — Distribution Analysis of Predicted MAVE Scores
+    Aim 4 — Distribution Analysis of Predicted Scores
     =======================================================
-    Score used   : pred_score  (Random Forest predicted MAVE functional score;
+    Score used   : pred_score  (Random Forest predicted score;
                    lower = more loss-of-function = more pathogenic)
     Input file   : {DATA_CSV.relative_to(ROOT)}
     N total      : {n_total}
@@ -144,7 +144,7 @@ stats_text = textwrap.dedent(f"""
 
     Classification threshold (from Spencer's model)
     -------------------------------------------------
-    Threshold : {THRESHOLD}  (training-set median of MAVE scores)
+    Threshold : {THRESHOLD}  (training-set median of training scores)
     Variants with pred_score < threshold → classified as Pathogenic
 
     Misclassified variant
@@ -215,10 +215,10 @@ ax.text(0.97, 0.97, pval_text, transform=ax.transAxes,
         fontsize=9, va="top", ha="right",
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc", alpha=0.9))
 
-ax.set_xlabel("Predicted MAVE score  (lower = more loss-of-function)", fontsize=11)
+ax.set_xlabel("Predicted Score  (lower = more loss-of-function)", fontsize=11)
 ax.set_ylabel("Density", fontsize=11)
 ax.set_title(
-    "Distribution of Predicted MAVE Scores by ClinVar Classification\n"
+    "Distribution of Predicted Scores by ClinVar Classification\n"
     "BRCA1 Missense Variants  (N = 20)",
     fontsize=12, fontweight="bold"
 )

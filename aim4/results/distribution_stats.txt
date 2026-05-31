@@ -1,6 +1,6 @@
-Aim 4 — Distribution Analysis of Predicted MAVE Scores
+Aim 4 — Distribution Analysis of Predicted Scores
 =======================================================
-Score used   : pred_score  (Random Forest predicted MAVE functional score;
+Score used   : pred_score  (Random Forest predicted score;
                lower = more loss-of-function = more pathogenic)
 Input file   : aim3/results/clinvar_predictions.csv
 N total      : 20
@@ -36,7 +36,7 @@ Interpretation: Significant at α = 0.05
 
 Classification threshold (from Spencer's model)
 -------------------------------------------------
-Threshold : -0.1726  (training-set median of MAVE scores)
+Threshold : -0.1726  (training-set median of training scores)
 Variants with pred_score < threshold → classified as Pathogenic
 
 Misclassified variant
