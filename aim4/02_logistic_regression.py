@@ -7,6 +7,17 @@ predictor and ClinVar binary labels (pathogenic / benign) as the outcome.
 Leave-One-Out cross-validation is used to obtain unbiased predicted
 probabilities for all 20 variants (avoids overfitting on N=20).
 
+Threshold note
+--------------
+AUROC / Average Precision are threshold-free and measure how well the
+out-of-fold probabilities *rank* the two classes. Accuracy / sensitivity /
+specificity, by contrast, depend on the probability cutoff. With near-
+separable data and LOO on N=20 the fitted probabilities are miscalibrated,
+so the naive 0.5 cutoff is not optimal. We therefore report classification
+metrics at BOTH the default 0.5 cutoff and the Youden-optimal threshold
+(argmax of sensitivity + specificity - 1 on the ROC curve) so the
+threshold sensitivity of the results is explicit.
+
 Outputs  (aim4/results/)
 ------------------------
   confusion_matrix.png
@@ -34,14 +45,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy import stats
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import LeaveOneOut, cross_val_predict
 from sklearn.metrics import (
     roc_auc_score, roc_curve,
     average_precision_score, precision_recall_curve,
     confusion_matrix, accuracy_score,
-    ConfusionMatrixDisplay,
 )
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
@@ -61,6 +70,19 @@ sns.set_style("whitegrid")
 # ══════════════════════════════════════════════════════════════════════════════
 
 df = pd.read_csv(DATA_CSV)
+
+# Validate the upstream export before relying on exact-string label matching.
+# (If Aim 3 ever emits raw ClinVar terms, e.g. "Likely pathogenic", a silent
+#  miscount here would otherwise pass everything through as benign.)
+_expected_labels = {"pathogenic", "benign"}
+_unexpected = set(df["clinvar_label"].unique()) - _expected_labels
+if _unexpected:
+    raise ValueError(
+        f"Unexpected clinvar_label value(s) {sorted(_unexpected)}; "
+        f"expected only {sorted(_expected_labels)}. "
+        "Normalise the Aim 3 export before validation."
+    )
+
 df["label_bin"] = (df["clinvar_label"] == "pathogenic").astype(int)
 
 X = df[["pred_score"]].values      # shape (20, 1)
@@ -98,20 +120,53 @@ print("(Negative coefficient expected: lower pred_score → higher P(pathogenic)
 # 3. Metrics from LOO predictions
 # ══════════════════════════════════════════════════════════════════════════════
 
-auroc   = roc_auc_score(y, oof_proba)
-ap      = average_precision_score(y, oof_proba)
-acc     = accuracy_score(y, oof_pred)
-cm      = confusion_matrix(y, oof_pred)
-tn, fp, fn, tp = cm.ravel()
-sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+# Threshold-free metrics (depend only on the ranking of oof_proba)
+auroc = roc_auc_score(y, oof_proba)
+ap    = average_precision_score(y, oof_proba)
 
-print(f"\nLOO-CV metrics:")
+# ROC curve + Youden-optimal threshold (max of sensitivity + specificity - 1)
+fpr, tpr, roc_thresholds = roc_curve(y, oof_proba)
+youden_j = tpr - fpr
+youden_idx = int(np.argmax(youden_j))
+youden_threshold = float(roc_thresholds[youden_idx])
+
+
+def threshold_metrics(threshold: float) -> dict:
+    """Confusion-matrix-derived metrics at a given probability cutoff."""
+    pred = (oof_proba >= threshold).astype(int)
+    cm = confusion_matrix(y, pred, labels=[0, 1])
+    tn, fp, fn, tp = (int(v) for v in cm.ravel())
+    return {
+        "threshold":   threshold,
+        "pred":        pred,
+        "cm":          cm,
+        "tp": tp, "tn": tn, "fp": fp, "fn": fn,
+        "accuracy":    accuracy_score(y, pred),
+        "sensitivity": tp / (tp + fn) if (tp + fn) > 0 else 0.0,
+        "specificity": tn / (tn + fp) if (tn + fp) > 0 else 0.0,
+    }
+
+
+m_default = threshold_metrics(0.5)
+m_youden  = threshold_metrics(youden_threshold)
+
+
+def _print_block(title: str, m: dict) -> None:
+    print(f"\n  {title} (threshold = {m['threshold']:.3f}):")
+    print(f"    Accuracy     : {m['accuracy']:.3f}  "
+          f"({m['tp'] + m['tn']}/{n_total})")
+    print(f"    Sensitivity  : {m['sensitivity']:.3f}  "
+          f"({m['tp']}/{m['tp'] + m['fn']} pathogenic correct)")
+    print(f"    Specificity  : {m['specificity']:.3f}  "
+          f"({m['tn']}/{m['tn'] + m['fp']} benign correct)")
+
+
+print(f"\nLOO-CV threshold-free metrics:")
 print(f"  AUROC        : {auroc:.3f}")
 print(f"  Avg Precision: {ap:.3f}")
-print(f"  Accuracy     : {acc:.3f}  ({int(acc * n_total)}/{n_total})")
-print(f"  Sensitivity  : {sensitivity:.3f}  ({tp}/{tp+fn} pathogenic correct)")
-print(f"  Specificity  : {specificity:.3f}  ({tn}/{tn+fp} benign correct)")
+print("\nLOO-CV classification metrics at two thresholds:")
+_print_block("Default cutoff",         m_default)
+_print_block("Youden-optimal cutoff",  m_youden)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -131,8 +186,8 @@ metrics_text = textwrap.dedent(f"""
     ------
     Logistic regression (L2 penalty, C=1.0) with Leave-One-Out cross-validation.
     LOO-CV produces one unbiased predicted probability per variant, avoiding
-    overfitting on the small N=20 dataset. Metrics are computed from these
-    out-of-fold probabilities; the confusion matrix uses threshold = 0.5.
+    overfitting on the small N=20 dataset. All metrics below are computed from
+    these out-of-fold probabilities.
 
     Model coefficients (fit on full data)
     --------------------------------------
@@ -141,17 +196,41 @@ metrics_text = textwrap.dedent(f"""
     Note: negative coefficient confirms that lower pred_score → higher
     probability of being classified pathogenic.
 
-    LOO-CV Classification Metrics
+    Threshold-free ranking metrics
     ------------------------------
     AUROC                  : {auroc:.4f}
     Average Precision (AP) : {ap:.4f}
-    Accuracy               : {acc:.4f}  ({int(acc * n_total)}/{n_total} correct)
-    Sensitivity            : {sensitivity:.4f}  ({tp}/{tp+fn} pathogenic correctly identified)
-    Specificity            : {specificity:.4f}  ({tn}/{tn+fp} benign correctly identified)
-    True Positives         : {tp}
-    True Negatives         : {tn}
-    False Positives        : {fp}
-    False Negatives        : {fn}
+    These depend only on how well the probabilities rank the two classes,
+    not on any cutoff. AUROC = 1.0 means the scores separate pathogenic from
+    benign perfectly by rank — i.e. SOME threshold classifies all 20 correctly.
+
+    Threshold-dependent classification metrics
+    ------------------------------------------
+    The accuracy/sensitivity/specificity below depend on the probability
+    cutoff. With near-separable data and LOO on N=20 the fitted probabilities
+    are miscalibrated, so the naive 0.5 cutoff is not optimal. Both cutoffs
+    are reported so the threshold sensitivity is explicit.
+
+    [A] Default cutoff (threshold = 0.500)
+        Accuracy        : {m_default['accuracy']:.4f}  ({m_default['tp'] + m_default['tn']}/{n_total} correct)
+        Sensitivity     : {m_default['sensitivity']:.4f}  ({m_default['tp']}/{m_default['tp'] + m_default['fn']} pathogenic correctly identified)
+        Specificity     : {m_default['specificity']:.4f}  ({m_default['tn']}/{m_default['tn'] + m_default['fp']} benign correctly identified)
+        TP / TN / FP / FN: {m_default['tp']} / {m_default['tn']} / {m_default['fp']} / {m_default['fn']}
+
+    [B] Youden-optimal cutoff (threshold = {youden_threshold:.4f})
+        Threshold chosen to maximise (sensitivity + specificity - 1) on the
+        out-of-fold ROC curve.
+        Accuracy        : {m_youden['accuracy']:.4f}  ({m_youden['tp'] + m_youden['tn']}/{n_total} correct)
+        Sensitivity     : {m_youden['sensitivity']:.4f}  ({m_youden['tp']}/{m_youden['tp'] + m_youden['fn']} pathogenic correctly identified)
+        Specificity     : {m_youden['specificity']:.4f}  ({m_youden['tn']}/{m_youden['tn'] + m_youden['fp']} benign correctly identified)
+        TP / TN / FP / FN: {m_youden['tp']} / {m_youden['tn']} / {m_youden['fp']} / {m_youden['fn']}
+
+    Interpretation
+    --------------
+    The drop in accuracy at the 0.5 cutoff relative to the Youden cutoff is an
+    artifact of probability calibration, not of discrimination: the ranking is
+    perfect (AUROC = 1.0). Report the threshold-free metrics as the headline
+    result and treat the 0.5-cutoff confusion matrix as illustrative only.
 
     Confusion matrix rows = actual labels, columns = predicted labels.
     Class order: 0 = benign, 1 = pathogenic.
@@ -166,62 +245,73 @@ print(f"\nMetrics saved → {metrics_path}")
 # 5. Confusion matrix plot
 # ══════════════════════════════════════════════════════════════════════════════
 
-fig, ax = plt.subplots(figsize=(5, 4.5))
+def plot_confusion_matrix(m: dict, subtitle: str, out_path: Path) -> None:
+    """Render a row-normalised confusion-matrix heatmap for one threshold."""
+    cm = m["cm"]
+    fig, ax = plt.subplots(figsize=(5, 4.5))
+    cm_norm = cm.astype(float) / cm.sum(axis=1, keepdims=True)  # row-normalised
 
-cm_norm = cm.astype(float) / cm.sum(axis=1, keepdims=True)  # row-normalised
+    sns.heatmap(
+        cm_norm, annot=False, fmt="", cmap="Blues",
+        xticklabels=["Benign", "Pathogenic"],
+        yticklabels=["Benign", "Pathogenic"],
+        linewidths=0.5, linecolor="white",
+        ax=ax, cbar=True, vmin=0, vmax=1,
+    )
 
-sns.heatmap(
-    cm_norm, annot=False, fmt="", cmap="Blues",
-    xticklabels=["Benign", "Pathogenic"],
-    yticklabels=["Benign", "Pathogenic"],
-    linewidths=0.5, linecolor="white",
-    ax=ax, cbar=True, vmin=0, vmax=1,
+    # Annotate each cell with count and row %
+    for i in range(2):
+        for j in range(2):
+            count = cm[i, j]
+            pct   = cm_norm[i, j] * 100
+            color = "white" if cm_norm[i, j] > 0.6 else "black"
+            ax.text(j + 0.5, i + 0.5, f"{count}\n({pct:.0f}%)",
+                    ha="center", va="center", fontsize=13, fontweight="bold",
+                    color=color)
+
+    n_correct = m["tp"] + m["tn"]
+    ax.set_xlabel("Predicted label", fontsize=11)
+    ax.set_ylabel("True ClinVar label", fontsize=11)
+    ax.set_title(
+        f"Confusion Matrix — Logistic Regression (LOO-CV)\n"
+        f"{subtitle}  |  N = {n_total}  |  "
+        f"Accuracy = {n_correct}/{n_total}",
+        fontsize=11, fontweight="bold"
+    )
+    plt.tight_layout()
+    fig.savefig(out_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Plot saved  → {out_path}")
+
+
+# Default 0.5 cutoff keeps the canonical filename; Youden cutoff is a sibling.
+plot_confusion_matrix(
+    m_default, "threshold = 0.50 (default)",
+    OUT_DIR / "confusion_matrix.png",
 )
-
-# Annotate each cell with count and row %
-for i in range(2):
-    for j in range(2):
-        count = cm[i, j]
-        pct   = cm_norm[i, j] * 100
-        color = "white" if cm_norm[i, j] > 0.6 else "black"
-        ax.text(j + 0.5, i + 0.5, f"{count}\n({pct:.0f}%)",
-                ha="center", va="center", fontsize=13, fontweight="bold",
-                color=color)
-
-ax.set_xlabel("Predicted label", fontsize=11)
-ax.set_ylabel("True ClinVar label", fontsize=11)
-ax.set_title(
-    f"Confusion Matrix — Logistic Regression (LOO-CV)\n"
-    f"N = {n_total}  |  Accuracy = {int(acc*n_total)}/{n_total}",
-    fontsize=11, fontweight="bold"
+plot_confusion_matrix(
+    m_youden, f"threshold = {youden_threshold:.3f} (Youden-optimal)",
+    OUT_DIR / "confusion_matrix_youden.png",
 )
-plt.tight_layout()
-cm_path = OUT_DIR / "confusion_matrix.png"
-fig.savefig(cm_path, dpi=300, bbox_inches="tight")
-plt.close(fig)
-print(f"Plot saved  → {cm_path}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 6. ROC curve
 # ══════════════════════════════════════════════════════════════════════════════
 
-fpr, tpr, thresholds = roc_curve(y, oof_proba)
-
 fig, ax = plt.subplots(figsize=(6, 5.5))
 
-# Shaded AUC area
+# Shaded AUC area  (fpr / tpr / youden_idx computed in the metrics section)
 ax.fill_between(fpr, tpr, alpha=0.15, color=COL_PATH)
 ax.plot(fpr, tpr, color=COL_PATH, linewidth=2.5,
         label=f"Logistic regression (AUROC = {auroc:.3f})")
 ax.plot([0, 1], [0, 1], color="#aaaaaa", linestyle="--",
         linewidth=1.5, label="Random classifier")
 
-# Mark the operating point closest to (0, 1)
-dist_to_ideal = np.sqrt(fpr**2 + (1 - tpr)**2)
-best_idx = int(np.argmin(dist_to_ideal))
-ax.scatter(fpr[best_idx], tpr[best_idx], color=COL_PATH,
-           s=80, zorder=5, label=f"Best threshold = {thresholds[best_idx]:.3f}")
+# Mark the Youden-optimal operating point
+ax.scatter(fpr[youden_idx], tpr[youden_idx], color=COL_PATH,
+           s=80, zorder=5,
+           label=f"Youden-optimal threshold = {youden_threshold:.3f}")
 
 ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=11)
 ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=11)

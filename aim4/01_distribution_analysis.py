@@ -60,6 +60,18 @@ THRESHOLD = -0.1726     # training-set median from Spencer's model
 
 df = pd.read_csv(DATA_CSV)
 
+# Validate the upstream export before relying on exact-string label matching.
+# (If Aim 3 ever emits raw ClinVar terms, e.g. "Likely pathogenic", a silent
+#  miscount here would otherwise pass everything through as benign.)
+_expected_labels = {"pathogenic", "benign"}
+_unexpected = set(df["clinvar_label"].unique()) - _expected_labels
+if _unexpected:
+    raise ValueError(
+        f"Unexpected clinvar_label value(s) {sorted(_unexpected)}; "
+        f"expected only {sorted(_expected_labels)}. "
+        "Normalise the Aim 3 export before validation."
+    )
+
 # Binary label
 df["label_bin"] = (df["clinvar_label"] == "pathogenic").astype(int)
 
@@ -181,16 +193,18 @@ ax.text(path_med - 0.01, ylim[1] * 0.92, f"median\n{path_med:.3f}",
 ax.text(ben_med + 0.01, ylim[1] * 0.92, f"median\n{ben_med:.3f}",
         color=COL_BEN, fontsize=8, ha="left", va="top")
 
-# Annotate misclassified variant H1862L
-h1862l_score = df.loc[df["variant"] == "H1862L", "pred_score"].values[0]
-ax.annotate(
-    "H1862L\n(benign, misclassified)",
-    xy=(h1862l_score, y_min + (ylim[1] - y_min) * 0.05),
-    xytext=(h1862l_score - 0.35, ylim[1] * 0.45),
-    fontsize=8, color="#333333",
-    arrowprops=dict(arrowstyle="->", color="#333333", lw=1.2),
-    bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85),
-)
+# Annotate misclassified variant H1862L (only if present in the dataset)
+_h1862l = df.loc[df["variant"] == "H1862L", "pred_score"]
+if not _h1862l.empty:
+    h1862l_score = _h1862l.values[0]
+    ax.annotate(
+        "H1862L\n(benign, misclassified)",
+        xy=(h1862l_score, y_min + (ylim[1] - y_min) * 0.05),
+        xytext=(h1862l_score - 0.35, ylim[1] * 0.45),
+        fontsize=8, color="#333333",
+        arrowprops=dict(arrowstyle="->", color="#333333", lw=1.2),
+        bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85),
+    )
 
 # p-value annotation box
 pval_text = (
