@@ -1,0 +1,46 @@
+Aim 4 — Distribution Analysis of Predicted MAVE Scores
+=======================================================
+Score used   : pred_score  (Random Forest predicted MAVE functional score;
+               lower = more loss-of-function = more pathogenic)
+Input file   : aim3/results/clinvar_predictions.csv
+N total      : 20
+N pathogenic : 10  (ClinVar: Pathogenic / Likely pathogenic /
+                          Pathogenic/Likely pathogenic)
+N benign     : 10   (ClinVar: Benign / Likely benign /
+                          Benign/Likely benign)
+
+Descriptive statistics
+----------------------
+Pathogenic — median: -0.9105,  mean: -0.7873,
+             std: 0.2562,
+             range: [-1.1035, -0.3530]
+Benign     — median: -0.0755,  mean: -0.0912,
+             std: 0.0542,
+             range: [-0.2321, -0.0331]
+
+Mann-Whitney U test (two-sided)
+--------------------------------
+Tests whether the central tendency of pred_score differs between groups.
+U statistic : 0.0
+p-value     : 0.0001827
+Interpretation: Significant at α = 0.05
+  → Pathogenic variants have significantly lower pred_score than benign variants.
+
+Kolmogorov-Smirnov test (two-sample)
+--------------------------------------
+Tests whether the overall score distributions differ in shape.
+KS statistic : 1.0000
+p-value      : 1.083e-05
+Interpretation: Significant at α = 0.05
+  → The two distributions differ significantly in shape.
+
+Classification threshold (from Spencer's model)
+-------------------------------------------------
+Threshold : -0.1726  (training-set median of MAVE scores)
+Variants with pred_score < threshold → classified as Pathogenic
+
+Misclassified variant
+----------------------
+H1862L  (ClinVar: benign,  pred_score = -0.2321)
+Note: pred_score falls just below threshold; 95% bootstrap CI crosses
+the threshold, indicating genuine model uncertainty for this variant.

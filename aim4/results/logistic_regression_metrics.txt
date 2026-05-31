@@ -1,0 +1,36 @@
+Aim 4 — Logistic Regression Validation
+=======================================
+Input file     : aim3/results/clinvar_predictions.csv
+Score used     : pred_score  (Random Forest predicted MAVE functional score)
+Predictor (X)  : pred_score  (continuous; lower = more pathogenic)
+Outcome (y)    : ClinVar binary label  (1 = pathogenic, 0 = benign)
+N total        : 20  (10 pathogenic, 10 benign)
+
+Method
+------
+Logistic regression (L2 penalty, C=1.0) with Leave-One-Out cross-validation.
+LOO-CV produces one unbiased predicted probability per variant, avoiding
+overfitting on the small N=20 dataset. Metrics are computed from these
+out-of-fold probabilities; the confusion matrix uses threshold = 0.5.
+
+Model coefficients (fit on full data)
+--------------------------------------
+pred_score coefficient : -2.0223
+Intercept              : -0.8697
+Note: negative coefficient confirms that lower pred_score → higher
+probability of being classified pathogenic.
+
+LOO-CV Classification Metrics
+------------------------------
+AUROC                  : 1.0000
+Average Precision (AP) : 1.0000
+Accuracy               : 0.8500  (17/20 correct)
+Sensitivity            : 0.7000  (7/10 pathogenic correctly identified)
+Specificity            : 1.0000  (10/10 benign correctly identified)
+True Positives         : 7
+True Negatives         : 10
+False Positives        : 0
+False Negatives        : 3
+
+Confusion matrix rows = actual labels, columns = predicted labels.
+Class order: 0 = benign, 1 = pathogenic.
