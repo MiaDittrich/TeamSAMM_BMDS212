@@ -1,0 +1,61 @@
+variant,clinvar_label,am_pathogenicity,am_class,cisplatin_score,hdr_activity_score,ClinicalSignificance,ReviewStatus,NumberSubmitters
+R1699W,Pathogenic,0.8237,pathogenic,,-1.10598701675,Pathogenic,reviewed by expert panel,45
+V1736A,Pathogenic,0.8955,pathogenic,-0.55257940575,-0.3849073175,Pathogenic,reviewed by expert panel,24
+W1837R,Pathogenic,0.9976,pathogenic,-1.114951644,-0.981170293,Pathogenic,reviewed by expert panel,21
+D1692H,Pathogenic,0.8871,pathogenic,,-1.522765271,Pathogenic,reviewed by expert panel,19
+L1786P,Pathogenic,0.9609,pathogenic,-0.74727455325,,Pathogenic,reviewed by expert panel,17
+V1713A,Pathogenic,0.8076,pathogenic,-1.23927010675,-1.0562429095,Likely pathogenic,reviewed by expert panel,16
+G1788V,Pathogenic,0.9249,pathogenic,-1.45880128725,,Pathogenic,reviewed by expert panel,14
+I1766S,Pathogenic,0.9315,pathogenic,-1.818164999,-2.1100677715,Pathogenic,reviewed by expert panel,13
+L1764P,Pathogenic,0.9211,pathogenic,-1.1098435,-2.02023185075,Pathogenic,reviewed by expert panel,12
+A1789T,Pathogenic,0.6958,pathogenic,-0.79852221075,,Likely pathogenic,reviewed by expert panel,11
+T1685I,Pathogenic,0.9339,pathogenic,-1.03350250925,-1.6102287575,Pathogenic,reviewed by expert panel,11
+S1655P,Pathogenic,0.9541,pathogenic,,-0.97910494775,Likely pathogenic,reviewed by expert panel,9
+F1761S,Pathogenic,0.9848,pathogenic,-0.8406113685,-1.381798694,Pathogenic,reviewed by expert panel,9
+L1854P,Pathogenic,0.8666,pathogenic,-1.03170570775,,Likely pathogenic,reviewed by expert panel,9
+F1734I,Pathogenic,0.8768,pathogenic,-1.536727872,-1.793209958,Likely pathogenic,reviewed by expert panel,8
+G1706A,Benign,0.4904,ambiguous,-0.232512202,0.07118251875,Benign,reviewed by expert panel,25
+K1606E,Benign,0.0708,benign,,-0.60284298225,Benign,reviewed by expert panel,17
+M1652T,Benign,0.6823,pathogenic,,-0.44199564475,Benign,reviewed by expert panel,15
+P1614S,Benign,0.0853,benign,,-0.1959409615,Benign,reviewed by expert panel,15
+P1859R,Benign,0.0905,benign,-0.36258924475,-0.06020690925,Benign,reviewed by expert panel,15
+I1858L,Benign,0.0858,benign,0.188398306,0.05247628625,Benign,reviewed by expert panel,11
+F1662S,Benign,0.1159,benign,,-0.3079240295,Benign,reviewed by expert panel,11
+T1675I,Benign,0.1126,benign,-0.05290234025,-0.042617117,Benign,reviewed by expert panel,8
+E1682K,Benign,0.0849,benign,-0.03064817525,-0.16146020225,Benign,reviewed by expert panel,7
+S1577P,Benign,0.1243,benign,,0.01335788975,Benign/Likely benign,"criteria provided, multiple submitters, no conflicts",14
+N1819S,Benign,0.0566,benign,-0.07903175325,,Benign/Likely benign,"criteria provided, multiple submitters, no conflicts",13
+A1584S,Benign,0.093,benign,,-0.21199500575,Likely benign,"criteria provided, multiple submitters, no conflicts",8
+P1856S,Benign,0.1017,benign,-0.00528372825,0.02798539925,Likely benign,"criteria provided, multiple submitters, no conflicts",7
+I1723T,Benign,0.4528,ambiguous,-0.03705685825,0.3350024955,Likely benign,"criteria provided, multiple submitters, no conflicts",3
+M1827L,Benign,0.0899,benign,-0.6692678685,0.1322717275,Benign,"criteria provided, single submitter",2
+R1699P,VUS,0.9776,pathogenic,-1.0683647835,-0.985395478,Uncertain significance,reviewed by expert panel,9
+S1841T,VUS,0.2983,benign,-0.63352472275,-0.33338209375,Uncertain significance,reviewed by expert panel,7
+E1829K,VUS,0.0759,benign,,-0.2654012665,Uncertain significance,"criteria provided, multiple submitters, no conflicts",10
+R1835P,VUS,0.969,pathogenic,-0.44244023575,-0.3437930935,Uncertain significance,"criteria provided, multiple submitters, no conflicts",9
+G1591S,VUS,0.0937,benign,,-0.1081994875,Uncertain significance,"criteria provided, multiple submitters, no conflicts",7
+H1746Q,VUS,0.9655,pathogenic,,-0.80695901225,Uncertain significance,"criteria provided, multiple submitters, no conflicts",6
+H1746P,VUS,0.8671,pathogenic,-0.4246283005,-1.067025862,Uncertain significance,"criteria provided, multiple submitters, no conflicts",6
+D1778E,VUS,0.1678,benign,-0.07033042825,,Uncertain significance,"criteria provided, multiple submitters, no conflicts",6
+G1743A,VUS,0.769,pathogenic,-0.428281602,-0.6443295735,Uncertain significance,"criteria provided, multiple submitters, no conflicts",6
+V1696L,VUS,0.7686,pathogenic,-0.493003079,-0.6554875395,Uncertain significance,"criteria provided, multiple submitters, no conflicts",5
+H1618Y,VUS,0.0842,benign,,-0.23543390775,Uncertain significance,"criteria provided, multiple submitters, no conflicts",5
+V1714I,VUS,0.1323,benign,0.135400167,-0.02691446575,Uncertain significance,"criteria provided, multiple submitters, no conflicts",5
+S1580F,VUS,0.1449,benign,,0.04127871225,Uncertain significance,"criteria provided, multiple submitters, no conflicts",5
+T1658I,VUS,0.3335,benign,,0.128967436,Uncertain significance,"criteria provided, multiple submitters, no conflicts",5
+F1704L,VUS,0.9734,pathogenic,-1.7761762765,-1.2569775655,Uncertain significance,"criteria provided, multiple submitters, no conflicts",5
+A1708V,Conflicting,0.6381,pathogenic,0.07447237325,-1.2662239685,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",24
+A1669S,Conflicting,0.1635,benign,,-0.339728811,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",24
+M1783T,Conflicting,0.9071,pathogenic,-0.61400381175,,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",20
+R1835Q,Conflicting,0.4786,ambiguous,-0.806134119,,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",19
+Y1769C,Conflicting,0.078,benign,-1.03453425675,,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",16
+P1776L,Conflicting,0.1792,benign,0.102688006,0.2028059305,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",15
+D1778G,Conflicting,0.1287,benign,-0.189128944,,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",15
+M1783L,Conflicting,0.4261,ambiguous,0.0597773925,0.22963164975,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",14
+M1689T,Conflicting,0.8373,pathogenic,0.0502510105,0.058655409,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",14
+A1789S,Conflicting,0.2554,benign,-0.122730946,-0.0271754155,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",14
+V1810A,Conflicting,0.3997,ambiguous,-0.18696175425,,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",12
+R1645T,Conflicting,0.0664,benign,,0.20874533375,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",12
+P1831R,Conflicting,0.1004,benign,,-0.09150716325,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",11
+G1763V,Conflicting,0.4875,ambiguous,-0.35972226475,-0.48027849,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",10
+N1592K,Conflicting,0.1492,benign,,0.0125078115,Conflicting classifications of pathogenicity,"criteria provided, conflicting classifications",10
