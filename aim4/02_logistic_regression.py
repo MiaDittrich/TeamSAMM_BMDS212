@@ -55,13 +55,13 @@ from sklearn.metrics import (
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 ROOT     = Path(__file__).resolve().parent.parent
-DATA_CSV = ROOT / "aim3" / "results" / "clinvar_predictions.csv"
+DATA_CSV = ROOT / "aim3" / "results" / "clinvar_48_predictions.csv"
 OUT_DIR  = ROOT / "aim4" / "results"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Style constants ────────────────────────────────────────────────────────────
-COL_PATH = "#d62728"
-COL_BEN  = "#1f77b4"
+COL_PATH = "#2aa8fd"
+COL_BEN  = "#57a774"
 sns.set_style("whitegrid")
 
 
@@ -70,6 +70,10 @@ sns.set_style("whitegrid")
 # ══════════════════════════════════════════════════════════════════════════════
 
 df = pd.read_csv(DATA_CSV)
+
+# Normalise label casing ("Pathogenic"/"Benign" → "pathogenic"/"benign") so the
+# exact-string matching below is robust to the Aim 3 export's capitalisation.
+df["clinvar_label"] = df["clinvar_label"].str.strip().str.lower()
 
 # Validate the upstream export before relying on exact-string label matching.
 # (If Aim 3 ever emits raw ClinVar terms, e.g. "Likely pathogenic", a silent

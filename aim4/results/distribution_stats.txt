@@ -2,35 +2,35 @@ Aim 4 — Distribution Analysis of Predicted Scores
 =======================================================
 Score used   : pred_score  (Random Forest predicted score;
                lower = more loss-of-function = more pathogenic)
-Input file   : aim3/results/clinvar_predictions.csv
-N total      : 20
-N pathogenic : 10  (ClinVar: Pathogenic / Likely pathogenic /
+Input file   : aim3/results/clinvar_48_predictions.csv
+N total      : 48
+N pathogenic : 24  (ClinVar: Pathogenic / Likely pathogenic /
                           Pathogenic/Likely pathogenic)
-N benign     : 10   (ClinVar: Benign / Likely benign /
+N benign     : 24   (ClinVar: Benign / Likely benign /
                           Benign/Likely benign)
 
 Descriptive statistics
 ----------------------
-Pathogenic — median: -0.9105,  mean: -0.7873,
-             std: 0.2562,
-             range: [-1.1035, -0.3530]
-Benign     — median: -0.0755,  mean: -0.0912,
-             std: 0.0542,
-             range: [-0.2321, -0.0331]
+Pathogenic — median: -0.8772,  mean: -0.7746,
+             std: 0.2571,
+             range: [-1.1395, -0.3421]
+Benign     — median: -0.1202,  mean: -0.1288,
+             std: 0.0753,
+             range: [-0.3473, -0.0289]
 
 Mann-Whitney U test (two-sided)
 --------------------------------
 Tests whether the central tendency of pred_score differs between groups.
-U statistic : 0.0
-p-value     : 0.0001827
+U statistic : 1.0
+p-value     : 3.473e-09
 Interpretation: Significant at α = 0.05
   → Pathogenic variants have significantly lower pred_score than benign variants.
 
 Kolmogorov-Smirnov test (two-sample)
 --------------------------------------
 Tests whether the overall score distributions differ in shape.
-KS statistic : 1.0000
-p-value      : 1.083e-05
+KS statistic : 0.9583
+p-value      : 2.977e-12
 Interpretation: Significant at α = 0.05
   → The two distributions differ significantly in shape.
 
@@ -39,8 +39,9 @@ Classification threshold (from Spencer's model)
 Threshold : -0.1726  (training-set median of training scores)
 Variants with pred_score < threshold → classified as Pathogenic
 
-Misclassified variant
-----------------------
-H1862L  (ClinVar: benign,  pred_score = -0.2321)
-Note: pred_score falls just below threshold; 95% bootstrap CI crosses
-the threshold, indicating genuine model uncertainty for this variant.
+Misclassified variants (at this threshold)
+------------------------------------------
+M1652T  (ClinVar: benign,  pred_score = -0.3473)
+P1859R  (ClinVar: benign,  pred_score = -0.2658)
+H1862L  (ClinVar: benign,  pred_score = -0.2443)
+K1606E  (ClinVar: benign,  pred_score = -0.2204)
