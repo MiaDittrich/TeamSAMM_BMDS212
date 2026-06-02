@@ -126,9 +126,11 @@ MAVE scores + AlphaMissense ─────────────────�
                                                                   ├──▶ Stage 3 (validate vs ClinVar)
                                                                   └──▶ Stage 4 (severity tiers + CIs)
 ```
+---
 
+## Teammate Contributions
 
- Ariana Lotfi — Dataset Curation, MAVE Processing & Pipeline Development
+** Ariana Lotfi — Dataset Curation, MAVE Processing & Pipeline Development**
   
   - Identified and sourced the two MAVE datasets used for functional labels (urn:mavedb:00001222-a-2,
   urn:mavedb:00001222-b-2; Adamovich et al. 2022), covering HDR activity and cisplatin resistance assays across
@@ -138,3 +140,13 @@ MAVE scores + AlphaMissense ─────────────────�
   - Curated and maintained the master variant dataset (brca1_final.csv), including merging AlphaMissense
   pathogenicity scores with MAVE functional data via inner join on protein position and amino acid identity
   - Organized the repository data structure, separating the model-ready dataset from intermediate/prior versions
+
+** Margot Hutchins: code in SAMM folder (we need to rename) of biochemical, structural, and EvoEF2 feature extraction pipeline using AF3 pdbs 
+
+** Mia Dittrich
+
+- Created mutagenesis script to insert selected missense mutations into the WT BRCA1 sequence to construct variants needed for 3D structure production (FASTA file output)
+- Folding variant sequences in AlphaFold 3 to prepare for structural feature extraction
+- External validation of predicted pathogenicity scores using held-out ClinVar dataset 
+
+** Spencer Cha
