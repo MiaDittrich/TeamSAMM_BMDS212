@@ -1,7 +1,7 @@
 """
 Aim 4 — Validation  |  2.4a Distribution Analysis
 ===================================================
-Compares the distribution of predicted MAVE scores (pred_score) between
+Compares the distribution of predicted scores (pred_score) between
 ClinVar-labelled pathogenic and benign BRCA1 missense variants.
 
 Tests
@@ -11,8 +11,8 @@ Tests
 
 Plot
 ----
-  kde_distribution.png — overlaid KDEs with rug ticks, classification
-  threshold, p-value annotation, and label for the one misclassification.
+  kde_distribution.png — overlaid KDEs with classification threshold,
+  p-value annotation, and labels for misclassified variants.
 
 Input
 -----
@@ -44,13 +44,13 @@ from scipy import stats
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 ROOT      = Path(__file__).resolve().parent.parent
-DATA_CSV  = ROOT / "aim3" / "results" / "clinvar_predictions.csv"
+DATA_CSV  = ROOT / "aim3" / "results" / "clinvar_48_predictions.csv"
 OUT_DIR   = ROOT / "aim4" / "results"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Style constants ────────────────────────────────────────────────────────────
-COL_PATH  = "#d62728"   # red  — pathogenic
-COL_BEN   = "#1f77b4"   # blue — benign
+COL_PATH  = "#2aa8fd"   # pathogenic
+COL_BEN   = "#57a774"   # benign
 THRESHOLD = -0.1726     # training-set median from Spencer's model
 
 
@@ -59,6 +59,10 @@ THRESHOLD = -0.1726     # training-set median from Spencer's model
 # ══════════════════════════════════════════════════════════════════════════════
 
 df = pd.read_csv(DATA_CSV)
+
+# Normalise label casing ("Pathogenic"/"Benign" → "pathogenic"/"benign") so the
+# exact-string matching below is robust to the Aim 3 export's capitalisation.
+df["clinvar_label"] = df["clinvar_label"].str.strip().str.lower()
 
 # Validate the upstream export before relying on exact-string label matching.
 # (If Aim 3 ever emits raw ClinVar terms, e.g. "Likely pathogenic", a silent
@@ -84,6 +88,14 @@ n_total = len(df)
 
 print(f"Loaded {n_total} variants: {n_path} pathogenic, {n_ben} benign")
 
+# Threshold-based classification and misclassifications (derived, not hardcoded):
+# pred_score < THRESHOLD → predicted pathogenic.
+df["pred_threshold_class"] = np.where(df["pred_score"] < THRESHOLD,
+                                      "pathogenic", "benign")
+misclassified = df.loc[df["pred_threshold_class"] != df["clinvar_label"],
+                       ["variant", "clinvar_label", "pred_score"]]
+print(f"Misclassified at threshold {THRESHOLD}: {len(misclassified)}")
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 2. Statistical tests
@@ -104,11 +116,19 @@ print(f"Median pred_score — pathogenic: {path_med:.4f}  benign: {ben_med:.4f}"
 # 3. Save stats
 # ══════════════════════════════════════════════════════════════════════════════
 
+if misclassified.empty:
+    misclass_text = "None — all variants classified correctly at this threshold."
+else:
+    misclass_text = "\n    ".join(
+        f"{r.variant}  (ClinVar: {r.clinvar_label},  pred_score = {r.pred_score:.4f})"
+        for r in misclassified.itertuples(index=False)
+    )
+
 stats_path = OUT_DIR / "distribution_stats.txt"
 stats_text = textwrap.dedent(f"""
-    Aim 4 — Distribution Analysis of Predicted MAVE Scores
+    Aim 4 — Distribution Analysis of Predicted Scores
     =======================================================
-    Score used   : pred_score  (Random Forest predicted MAVE functional score;
+    Score used   : pred_score  (Random Forest predicted score;
                    lower = more loss-of-function = more pathogenic)
     Input file   : {DATA_CSV.relative_to(ROOT)}
     N total      : {n_total}
@@ -144,14 +164,12 @@ stats_text = textwrap.dedent(f"""
 
     Classification threshold (from Spencer's model)
     -------------------------------------------------
-    Threshold : {THRESHOLD}  (training-set median of MAVE scores)
+    Threshold : {THRESHOLD}  (training-set median of training scores)
     Variants with pred_score < threshold → classified as Pathogenic
 
-    Misclassified variant
-    ----------------------
-    H1862L  (ClinVar: benign,  pred_score = -0.2321)
-    Note: pred_score falls just below threshold; 95% bootstrap CI crosses
-    the threshold, indicating genuine model uncertainty for this variant.
+    Misclassified variants (at this threshold)
+    ------------------------------------------
+    {misclass_text}
 """).strip()
 
 stats_path.write_text(stats_text)
@@ -171,12 +189,7 @@ sns.kdeplot(path_scores, ax=ax, color=COL_PATH, linewidth=2.5,
 sns.kdeplot(ben_scores,  ax=ax, color=COL_BEN,  linewidth=2.5,
             fill=True, alpha=0.25, label=f"Benign (n={n_ben})")
 
-# Rug ticks
 y_min = ax.get_ylim()[0]
-for s in path_scores:
-    ax.plot(s, y_min, "|", color=COL_PATH, alpha=0.8, markersize=10, markeredgewidth=1.5)
-for s in ben_scores:
-    ax.plot(s, y_min, "|", color=COL_BEN,  alpha=0.8, markersize=10, markeredgewidth=1.5)
 
 # Median lines
 ax.axvline(path_med, color=COL_PATH, linestyle="--", linewidth=1.4, alpha=0.7)
@@ -193,18 +206,23 @@ ax.text(path_med - 0.01, ylim[1] * 0.92, f"median\n{path_med:.3f}",
 ax.text(ben_med + 0.01, ylim[1] * 0.92, f"median\n{ben_med:.3f}",
         color=COL_BEN, fontsize=8, ha="left", va="top")
 
-# Annotate misclassified variant H1862L (only if present in the dataset)
-_h1862l = df.loc[df["variant"] == "H1862L", "pred_score"]
-if not _h1862l.empty:
-    h1862l_score = _h1862l.values[0]
-    ax.annotate(
-        "H1862L\n(benign, misclassified)",
-        xy=(h1862l_score, y_min + (ylim[1] - y_min) * 0.05),
-        xytext=(h1862l_score - 0.35, ylim[1] * 0.45),
-        fontsize=8, color="#333333",
-        arrowprops=dict(arrowstyle="->", color="#333333", lw=1.2),
-        bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85),
-    )
+# Annotate misclassified variants (derived from the threshold, not hardcoded).
+# To avoid clutter on the larger test set, label individually only when there
+# are a few; otherwise summarise the count.
+if len(misclassified) > 0 and len(misclassified) <= 4:
+    for i, r in enumerate(misclassified.itertuples(index=False)):
+        ax.annotate(
+            f"{r.variant}\n({r.clinvar_label}, misclassified)",
+            xy=(r.pred_score, y_min + (ylim[1] - y_min) * 0.05),
+            xytext=(r.pred_score - 0.35, ylim[1] * (0.45 - 0.12 * i)),
+            fontsize=8, color="#333333",
+            arrowprops=dict(arrowstyle="->", color="#333333", lw=1.2),
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85),
+        )
+elif len(misclassified) > 4:
+    ax.text(0.03, 0.55, f"{len(misclassified)} misclassified\nat threshold",
+            transform=ax.transAxes, fontsize=8, color="#333333",
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85))
 
 # p-value annotation box
 pval_text = (
@@ -215,11 +233,11 @@ ax.text(0.97, 0.97, pval_text, transform=ax.transAxes,
         fontsize=9, va="top", ha="right",
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc", alpha=0.9))
 
-ax.set_xlabel("Predicted MAVE score  (lower = more loss-of-function)", fontsize=11)
+ax.set_xlabel("Predicted Score  (lower = more loss-of-function)", fontsize=11)
 ax.set_ylabel("Density", fontsize=11)
 ax.set_title(
-    "Distribution of Predicted MAVE Scores by ClinVar Classification\n"
-    "BRCA1 Missense Variants  (N = 20)",
+    "Distribution of Predicted Scores by ClinVar Classification\n"
+    f"BRCA1 Missense Variants  (N = {n_total})",
     fontsize=12, fontweight="bold"
 )
 

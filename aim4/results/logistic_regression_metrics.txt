@@ -1,10 +1,10 @@
 Aim 4 — Logistic Regression Validation
 =======================================
-Input file     : aim3/results/clinvar_predictions.csv
-Score used     : pred_score  (Random Forest predicted MAVE functional score)
+Input file     : aim3/results/clinvar_48_predictions.csv
+Score used     : pred_score  (Random Forest predicted score)
 Predictor (X)  : pred_score  (continuous; lower = more pathogenic)
 Outcome (y)    : ClinVar binary label  (1 = pathogenic, 0 = benign)
-N total        : 20  (10 pathogenic, 10 benign)
+N total        : 48  (24 pathogenic, 24 benign)
 
 Method
 ------
@@ -15,15 +15,15 @@ these out-of-fold probabilities.
 
 Model coefficients (fit on full data)
 --------------------------------------
-pred_score coefficient : -2.0223
-Intercept              : -0.8697
+pred_score coefficient : -3.2158
+Intercept              : -1.3872
 Note: negative coefficient confirms that lower pred_score → higher
 probability of being classified pathogenic.
 
 Threshold-free ranking metrics
 ------------------------------
-AUROC                  : 1.0000
-Average Precision (AP) : 1.0000
+AUROC                  : 0.9965
+Average Precision (AP) : 0.9966
 These depend only on how well the probabilities rank the two classes,
 not on any cutoff. AUROC = 1.0 means the scores separate pathogenic from
 benign perfectly by rank — i.e. SOME threshold classifies all 20 correctly.
@@ -36,18 +36,18 @@ are miscalibrated, so the naive 0.5 cutoff is not optimal. Both cutoffs
 are reported so the threshold sensitivity is explicit.
 
 [A] Default cutoff (threshold = 0.500)
-    Accuracy        : 0.8500  (17/20 correct)
-    Sensitivity     : 0.7000  (7/10 pathogenic correctly identified)
-    Specificity     : 1.0000  (10/10 benign correctly identified)
-    TP / TN / FP / FN: 7 / 10 / 0 / 3
+    Accuracy        : 0.9375  (45/48 correct)
+    Sensitivity     : 0.8750  (21/24 pathogenic correctly identified)
+    Specificity     : 1.0000  (24/24 benign correctly identified)
+    TP / TN / FP / FN: 21 / 24 / 0 / 3
 
-[B] Youden-optimal cutoff (threshold = 0.4279)
+[B] Youden-optimal cutoff (threshold = 0.4125)
     Threshold chosen to maximise (sensitivity + specificity - 1) on the
     out-of-fold ROC curve.
-    Accuracy        : 1.0000  (20/20 correct)
-    Sensitivity     : 1.0000  (10/10 pathogenic correctly identified)
-    Specificity     : 1.0000  (10/10 benign correctly identified)
-    TP / TN / FP / FN: 10 / 10 / 0 / 0
+    Accuracy        : 0.9792  (47/48 correct)
+    Sensitivity     : 1.0000  (24/24 pathogenic correctly identified)
+    Specificity     : 0.9583  (23/24 benign correctly identified)
+    TP / TN / FP / FN: 24 / 23 / 1 / 0
 
 Interpretation
 --------------

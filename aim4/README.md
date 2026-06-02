@@ -1,7 +1,7 @@
-# Aim 4 — External Validation of Predicted MAVE Scores
+# Aim 4 — External Validation of Predicted Scores
 
 This folder validates the **Aim 3** machine-learning predictions (`pred_score`, a
-Random Forest predicted MAVE functional score) against an **independent ClinVar
+Random Forest predicted score) against an **independent ClinVar
 ground truth** for BRCA1 missense variants. The question is simple: *do the
 predicted functional scores actually separate clinically pathogenic variants from
 benign ones?*
@@ -24,7 +24,7 @@ One row per variant. Columns used by these scripts:
 |-----------------|----------------------------------------------------------------|
 | `variant`       | Protein-level variant ID (e.g. `M1775R`)                       |
 | `clinvar_label` | Ground-truth class, normalised to `pathogenic` / `benign`      |
-| `pred_score`    | Aim 3 predicted MAVE score (lower = more pathogenic)           |
+| `pred_score`    | Aim 3 predicted score (lower = more pathogenic)           |
 
 > Both scripts assert that `clinvar_label` contains **only** `pathogenic` /
 > `benign` and abort otherwise — this guards against a silently mis-counted
