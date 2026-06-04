@@ -11,12 +11,11 @@ Threshold note
 --------------
 AUROC / Average Precision are threshold-free and measure how well the
 out-of-fold probabilities *rank* the two classes. Accuracy / sensitivity /
-specificity, by contrast, depend on the probability cutoff. With near-
-separable data and LOO on N=20 the fitted probabilities are miscalibrated,
-so the naive 0.5 cutoff is not optimal. We therefore report classification
-metrics at BOTH the default 0.5 cutoff and the Youden-optimal threshold
-(argmax of sensitivity + specificity - 1 on the ROC curve) so the
-threshold sensitivity of the results is explicit.
+specificity, by contrast, depend on the probability cutoff. We report these
+classification metrics at the fixed, prespecified 0.5 cutoff only. A data-
+driven "optimal" cutoff (e.g. Youden's J) is deliberately NOT used, because
+choosing the threshold after seeing the labels inflates the apparent
+accuracy and is not an honest out-of-sample estimate.
 
 Outputs  (aim4/results/)
 ------------------------
@@ -128,11 +127,8 @@ print("(Negative coefficient expected: lower pred_score → higher P(pathogenic)
 auroc = roc_auc_score(y, oof_proba)
 ap    = average_precision_score(y, oof_proba)
 
-# ROC curve + Youden-optimal threshold (max of sensitivity + specificity - 1)
+# ROC curve (used for the curve plot below; threshold-free)
 fpr, tpr, roc_thresholds = roc_curve(y, oof_proba)
-youden_j = tpr - fpr
-youden_idx = int(np.argmax(youden_j))
-youden_threshold = float(roc_thresholds[youden_idx])
 
 
 def threshold_metrics(threshold: float) -> dict:
@@ -152,7 +148,6 @@ def threshold_metrics(threshold: float) -> dict:
 
 
 m_default = threshold_metrics(0.5)
-m_youden  = threshold_metrics(youden_threshold)
 
 
 def _print_block(title: str, m: dict) -> None:
@@ -168,9 +163,8 @@ def _print_block(title: str, m: dict) -> None:
 print(f"\nLOO-CV threshold-free metrics:")
 print(f"  AUROC        : {auroc:.3f}")
 print(f"  Avg Precision: {ap:.3f}")
-print("\nLOO-CV classification metrics at two thresholds:")
-_print_block("Default cutoff",         m_default)
-_print_block("Youden-optimal cutoff",  m_youden)
+print("\nLOO-CV classification metrics at the 0.5 cutoff:")
+_print_block("Default cutoff", m_default)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -210,31 +204,16 @@ metrics_text = textwrap.dedent(f"""
 
     Threshold-dependent classification metrics
     ------------------------------------------
-    The accuracy/sensitivity/specificity below depend on the probability
-    cutoff. With near-separable data and LOO on N=20 the fitted probabilities
-    are miscalibrated, so the naive 0.5 cutoff is not optimal. Both cutoffs
-    are reported so the threshold sensitivity is explicit.
+    The accuracy/sensitivity/specificity below are computed at the fixed,
+    prespecified 0.5 probability cutoff. A data-driven "optimal" cutoff is
+    deliberately not reported, as tuning the threshold on the labels would
+    overstate out-of-sample performance.
 
-    [A] Default cutoff (threshold = 0.500)
+    Default cutoff (threshold = 0.500)
         Accuracy        : {m_default['accuracy']:.4f}  ({m_default['tp'] + m_default['tn']}/{n_total} correct)
         Sensitivity     : {m_default['sensitivity']:.4f}  ({m_default['tp']}/{m_default['tp'] + m_default['fn']} pathogenic correctly identified)
         Specificity     : {m_default['specificity']:.4f}  ({m_default['tn']}/{m_default['tn'] + m_default['fp']} benign correctly identified)
         TP / TN / FP / FN: {m_default['tp']} / {m_default['tn']} / {m_default['fp']} / {m_default['fn']}
-
-    [B] Youden-optimal cutoff (threshold = {youden_threshold:.4f})
-        Threshold chosen to maximise (sensitivity + specificity - 1) on the
-        out-of-fold ROC curve.
-        Accuracy        : {m_youden['accuracy']:.4f}  ({m_youden['tp'] + m_youden['tn']}/{n_total} correct)
-        Sensitivity     : {m_youden['sensitivity']:.4f}  ({m_youden['tp']}/{m_youden['tp'] + m_youden['fn']} pathogenic correctly identified)
-        Specificity     : {m_youden['specificity']:.4f}  ({m_youden['tn']}/{m_youden['tn'] + m_youden['fp']} benign correctly identified)
-        TP / TN / FP / FN: {m_youden['tp']} / {m_youden['tn']} / {m_youden['fp']} / {m_youden['fn']}
-
-    Interpretation
-    --------------
-    The drop in accuracy at the 0.5 cutoff relative to the Youden cutoff is an
-    artifact of probability calibration, not of discrimination: the ranking is
-    perfect (AUROC = 1.0). Report the threshold-free metrics as the headline
-    result and treat the 0.5-cutoff confusion matrix as illustrative only.
 
     Confusion matrix rows = actual labels, columns = predicted labels.
     Class order: 0 = benign, 1 = pathogenic.
@@ -288,14 +267,9 @@ def plot_confusion_matrix(m: dict, subtitle: str, out_path: Path) -> None:
     print(f"Plot saved  → {out_path}")
 
 
-# Default 0.5 cutoff keeps the canonical filename; Youden cutoff is a sibling.
 plot_confusion_matrix(
     m_default, "threshold = 0.50 (default)",
     OUT_DIR / "confusion_matrix.png",
-)
-plot_confusion_matrix(
-    m_youden, f"threshold = {youden_threshold:.3f} (Youden-optimal)",
-    OUT_DIR / "confusion_matrix_youden.png",
 )
 
 
@@ -305,17 +279,12 @@ plot_confusion_matrix(
 
 fig, ax = plt.subplots(figsize=(6, 5.5))
 
-# Shaded AUC area  (fpr / tpr / youden_idx computed in the metrics section)
+# Shaded AUC area  (fpr / tpr computed in the metrics section)
 ax.fill_between(fpr, tpr, alpha=0.15, color=COL_PATH)
 ax.plot(fpr, tpr, color=COL_PATH, linewidth=2.5,
         label=f"Logistic regression (AUROC = {auroc:.3f})")
 ax.plot([0, 1], [0, 1], color="#aaaaaa", linestyle="--",
         linewidth=1.5, label="Random classifier")
-
-# Mark the Youden-optimal operating point
-ax.scatter(fpr[youden_idx], tpr[youden_idx], color=COL_PATH,
-           s=80, zorder=5,
-           label=f"Youden-optimal threshold = {youden_threshold:.3f}")
 
 ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=11)
 ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=11)

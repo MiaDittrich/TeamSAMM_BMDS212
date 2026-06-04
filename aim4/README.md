@@ -7,15 +7,15 @@ predicted functional scores actually separate clinically pathogenic variants fro
 benign ones?*
 
 - **Lower `pred_score` ⇒ more loss-of-function ⇒ more likely pathogenic.**
-- Validation set: **20 BRCA1 missense variants** with non-conflicting ClinVar
-  classifications — **10 pathogenic, 10 benign**.
+- Validation set: **28 BRCA1 missense variants** with non-conflicting ClinVar
+  classifications — **14 pathogenic, 14 benign**.
 
 ---
 
 ## Input
 
 ```
-aim3/results/clinvar_predictions.csv
+clinvar_test_predictions_annotated.csv   (repo root)
 ```
 
 One row per variant. Columns used by these scripts:
@@ -41,21 +41,20 @@ Tests whether the `pred_score` distributions of the two classes differ.
 - **Mann–Whitney U** (two-sided) — difference in central tendency.
 - **Kolmogorov–Smirnov** (two-sample) — difference in overall distribution shape.
 - Produces an overlaid KDE plot with group medians, the score-based
-  classification threshold, rug ticks, p-value annotations, and a callout for the
-  one threshold-misclassified variant.
+  classification threshold, p-value annotations, and callouts for any
+  threshold-misclassified variants.
 
 **Outputs:** `results/distribution_stats.txt`, `results/kde_distribution.png`
 
 ### `02_logistic_regression.py`
 Fits a logistic regression with `pred_score` as the sole predictor and the ClinVar
 label as the outcome, evaluated by **Leave-One-Out cross-validation (LOO-CV)** —
-the appropriate choice for N=20 (one unbiased out-of-fold probability per variant,
-no leakage).
+the appropriate choice for a small N (one unbiased out-of-fold probability per
+variant, no leakage).
 
 **Outputs:**
 - `results/logistic_regression_metrics.txt`
 - `results/confusion_matrix.png` (0.5 cutoff)
-- `results/confusion_matrix_youden.png` (Youden-optimal cutoff)
 - `results/roc_curve.png`, `results/precision_recall_curve.png`
 
 ---
@@ -67,26 +66,15 @@ This is the most important nuance in the Aim 4 results.
 - **AUROC** and **Average Precision** are *threshold-free*. They measure only how
   well the predicted probabilities **rank** pathogenic above benign.
   **AUROC = 1.0 means the scores separate the two classes perfectly by rank** —
-  i.e. *some* cutoff classifies all 20 variants correctly.
+  i.e. *some* cutoff classifies all variants correctly.
 - **Accuracy / sensitivity / specificity** depend on the **probability cutoff**.
-  With near-separable data and LOO on N=20, the fitted logistic probabilities are
-  **miscalibrated**, so the naive 0.5 cutoff is *not* the optimal operating point
-  and understates performance.
+  We report these at the fixed, prespecified **0.5 cutoff only**.
 
-Because of this, `02` reports classification metrics at **two** thresholds so the
-difference is explicit:
-
-| Threshold                | What it is                                                        |
-|--------------------------|-------------------------------------------------------------------|
-| **0.50 (default)**       | Naive probability cutoff. Illustrative only.                      |
-| **Youden-optimal**       | Maximises `sensitivity + specificity − 1` on the out-of-fold ROC. |
-
-Since AUROC = 1.0, the Youden cutoff achieves perfect separation (20/20), whereas
-the 0.5 cutoff misclassifies several pathogenic variants as benign — a calibration
-artifact, **not** a discrimination failure. **Report the threshold-free metrics
-(AUROC / AP) as the headline result**; treat the 0.5-cutoff confusion matrix as
-illustrative. The exact Youden threshold value is written into
-`logistic_regression_metrics.txt` at run time.
+A data-driven "optimal" cutoff (e.g. Youden's J, which maximises
+`sensitivity + specificity − 1`) is **deliberately not used**: choosing the
+threshold after seeing the labels inflates the apparent accuracy and is not an
+honest out-of-sample estimate. The 0.5 cutoff is fixed in advance and reported
+as-is.
 
 ---
 
@@ -94,27 +82,28 @@ illustrative. The exact Youden threshold value is written into
 
 **Distribution analysis** — the two classes are cleanly separated:
 
-| Statistic            | Value          |
-|----------------------|----------------|
-| Mann–Whitney U       | 0  (p ≈ 1.8e-4) |
-| Kolmogorov–Smirnov   | 1.0 (p ≈ 1.1e-5) |
-| Median (pathogenic)  | ≈ −0.91        |
-| Median (benign)      | ≈ −0.08        |
+| Statistic            | Value             |
+|----------------------|-------------------|
+| Mann–Whitney U       | 0.0  (p ≈ 7.5e-6) |
+| Kolmogorov–Smirnov   | 1.0  (p ≈ 5.0e-8) |
+| Median (pathogenic)  | ≈ −0.847          |
+| Median (benign)      | ≈ −0.004          |
 
-**Logistic regression (LOO-CV)** — perfect ranking:
+**Logistic regression (LOO-CV)** at the fixed 0.5 cutoff:
 
 | Metric                          | Value                |
 |---------------------------------|----------------------|
-| AUROC                           | 1.000                |
-| Average Precision               | 1.000                |
-| Accuracy @ 0.5 cutoff           | 0.85 (17/20)         |
-| Accuracy @ Youden cutoff        | 1.00 (20/20)         |
+| AUROC (threshold-free)          | 1.000                |
+| Average Precision (threshold-free) | 1.000             |
+| Accuracy @ 0.5 cutoff           | 0.964 (27/28)        |
+| Sensitivity @ 0.5 cutoff        | 1.000 (14/14)        |
+| Specificity @ 0.5 cutoff        | 0.929 (13/14)        |
 
 > **Note on the two scripts' misclassifications.** The distribution script's
-> fixed score threshold flags **H1862L** (a benign variant just below the cutoff)
-> as the single error. The logistic-regression 0.5 cutoff instead misses a few
-> *pathogenic* variants. These are different operating points on the same
-> perfectly-ranked data — do not conflate them in the writeup.
+> fixed score threshold flags 2 benign variants (**M1652T**, **I1723T**) just
+> past the cutoff. The logistic-regression 0.5 cutoff instead misclassifies 1
+> benign variant as pathogenic. These are different operating points on the same
+> perfectly-ranked data (AUROC = 1.0) — do not conflate them in the writeup.
 
 ---
 
@@ -147,7 +136,6 @@ aim4/
     ├── kde_distribution.png
     ├── logistic_regression_metrics.txt
     ├── confusion_matrix.png            # 0.5 cutoff
-    ├── confusion_matrix_youden.png     # Youden-optimal cutoff
     ├── roc_curve.png
     └── precision_recall_curve.png
 ```

@@ -30,31 +30,16 @@ benign perfectly by rank — i.e. SOME threshold classifies all 20 correctly.
 
 Threshold-dependent classification metrics
 ------------------------------------------
-The accuracy/sensitivity/specificity below depend on the probability
-cutoff. With near-separable data and LOO on N=20 the fitted probabilities
-are miscalibrated, so the naive 0.5 cutoff is not optimal. Both cutoffs
-are reported so the threshold sensitivity is explicit.
+The accuracy/sensitivity/specificity below are computed at the fixed,
+prespecified 0.5 probability cutoff. A data-driven "optimal" cutoff is
+deliberately not reported, as tuning the threshold on the labels would
+overstate out-of-sample performance.
 
-[A] Default cutoff (threshold = 0.500)
+Default cutoff (threshold = 0.500)
     Accuracy        : 0.9643  (27/28 correct)
     Sensitivity     : 1.0000  (14/14 pathogenic correctly identified)
     Specificity     : 0.9286  (13/14 benign correctly identified)
     TP / TN / FP / FN: 14 / 13 / 1 / 0
-
-[B] Youden-optimal cutoff (threshold = 0.5480)
-    Threshold chosen to maximise (sensitivity + specificity - 1) on the
-    out-of-fold ROC curve.
-    Accuracy        : 1.0000  (28/28 correct)
-    Sensitivity     : 1.0000  (14/14 pathogenic correctly identified)
-    Specificity     : 1.0000  (14/14 benign correctly identified)
-    TP / TN / FP / FN: 14 / 14 / 0 / 0
-
-Interpretation
---------------
-The drop in accuracy at the 0.5 cutoff relative to the Youden cutoff is an
-artifact of probability calibration, not of discrimination: the ranking is
-perfect (AUROC = 1.0). Report the threshold-free metrics as the headline
-result and treat the 0.5-cutoff confusion matrix as illustrative only.
 
 Confusion matrix rows = actual labels, columns = predicted labels.
 Class order: 0 = benign, 1 = pathogenic.
