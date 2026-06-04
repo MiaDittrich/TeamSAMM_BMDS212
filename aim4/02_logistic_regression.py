@@ -286,6 +286,16 @@ ax.plot(fpr, tpr, color=COL_PATH, linewidth=2.5,
 ax.plot([0, 1], [0, 1], color="#aaaaaa", linestyle="--",
         linewidth=1.5, label="Random classifier")
 
+# Mark the actual operating point at the fixed 0.5 cutoff. The curve is
+# threshold-free (perfect rank → AUROC=1.0), but the classifier in practice
+# runs at 0.5, where one benign is mislabelled (specificity < 1).
+roc_fpr_op = m_default["fp"] / (m_default["fp"] + m_default["tn"])
+roc_tpr_op = m_default["sensitivity"]
+ax.scatter(roc_fpr_op, roc_tpr_op, color="#d62728", s=90, zorder=6,
+           edgecolor="white", linewidth=1.2,
+           label=f"Operating point @ 0.5 cutoff "
+                 f"(sens {roc_tpr_op:.2f}, spec {m_default['specificity']:.2f})")
+
 ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=11)
 ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=11)
 ax.set_title(
@@ -297,9 +307,9 @@ ax.legend(fontsize=9, loc="lower right")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
-# AUROC text box
-ax.text(0.97, 0.10, f"AUROC = {auroc:.3f}", transform=ax.transAxes,
-        fontsize=11, va="bottom", ha="right", fontweight="bold",
+# AUROC text box (top-left, clear of the lower-right legend)
+ax.text(0.03, 0.04, f"AUROC = {auroc:.3f}", transform=ax.transAxes,
+        fontsize=11, va="bottom", ha="left", fontweight="bold",
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
 
 plt.tight_layout()
@@ -324,6 +334,16 @@ ax.plot(recall, precision, color=COL_PATH, linewidth=2.5,
 ax.axhline(prevalence, color="#aaaaaa", linestyle="--", linewidth=1.5,
            label=f"Baseline (prevalence = {prevalence:.2f})")
 
+# Mark the actual operating point at the fixed 0.5 cutoff (precision < 1 because
+# one benign is predicted pathogenic, even though the ranking is perfect).
+pr_recall_op = m_default["sensitivity"]
+pr_precision_op = (m_default["tp"] / (m_default["tp"] + m_default["fp"])
+                   if (m_default["tp"] + m_default["fp"]) > 0 else 0.0)
+ax.scatter(pr_recall_op, pr_precision_op, color="#d62728", s=90, zorder=6,
+           edgecolor="white", linewidth=1.2,
+           label=f"Operating point @ 0.5 cutoff "
+                 f"(recall {pr_recall_op:.2f}, prec {pr_precision_op:.2f})")
+
 ax.set_xlabel("Recall (Sensitivity)", fontsize=11)
 ax.set_ylabel("Precision (PPV)", fontsize=11)
 ax.set_title(
@@ -335,9 +355,9 @@ ax.legend(fontsize=9, loc="lower left")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
-# AP text box
-ax.text(0.03, 0.10, f"Average Precision = {ap:.3f}", transform=ax.transAxes,
-        fontsize=11, va="bottom", ha="left", fontweight="bold",
+# AP text box (lower-right, clear of the lower-left legend)
+ax.text(0.97, 0.04, f"Average Precision = {ap:.3f}", transform=ax.transAxes,
+        fontsize=11, va="bottom", ha="right", fontweight="bold",
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
 
 plt.tight_layout()
