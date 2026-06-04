@@ -44,7 +44,7 @@ from scipy import stats
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 ROOT      = Path(__file__).resolve().parent.parent
-DATA_CSV  = ROOT / "aim3" / "results" / "clinvar_48_predictions.csv"
+DATA_CSV  = ROOT / "clinvar_test_predictions_annotated.csv"
 OUT_DIR   = ROOT / "aim4" / "results"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
