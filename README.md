@@ -141,7 +141,12 @@ MAVE scores + AlphaMissense ─────────────────�
   pathogenicity scores with MAVE functional data via inner join on protein position and amino acid identity
   - Organized the repository data structure, separating the model-ready dataset from intermediate/prior versions
 
-** Margot Hutchins: code in SAMM folder (we need to rename) of biochemical, structural, and EvoEF2 feature extraction pipeline using AF3 pdbs 
+** Margot Hutchins - Dataset Generation for Structural and Biochemical data 
+  - Processed AF3 structure files and aligned to wildtype structure using high-confidence BRCT domain residues
+  - Computed local and global structural features, e.g. RMSDs and Ramachandran angles
+  - Imputed biochemical features of mutant residue
+  - Joined structural and biochemical features with two energy stability metrics from EvoEF2
+  - Dropped low-variance columns for data pruning
 
 ** Mia Dittrich
 
