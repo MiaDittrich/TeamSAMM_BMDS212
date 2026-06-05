@@ -181,9 +181,11 @@ MAVE scores + AlphaMissense ─────────────────�
 
 ** Mia Dittrich
 
-- Created mutagenesis script to insert selected missense mutations into the WT BRCA1 sequence to construct variants needed for 3D structure production (FASTA file output)
-- Folding variant sequences in AlphaFold 3 to prepare for structural feature extraction
-- External validation of predicted pathogenicity scores using held-out ClinVar dataset 
+- Wrote the mutagenesis script (SAMM/BRCA1_mutagenesis (3).ipynb) that parses three-letter HGVS notation, validates each position against the wild-type residue, inserts the selected missense mutations into the full-length WT BRCA1 sequence, and writes a multi-record FASTA for 3D structure production
+- Folded the variant sequences in AlphaFold 3 to generate the mutant structures consumed by the structural feature-extraction pipeline
+- Built the  Aim 4 external-validation pipeline (aim4/) — two analysis scripts, results, and documentation — testing whether predicted scores separate pathogenic from benign variants
+- Implemented the distribution analysis (aim4/01_distribution_analysis.py): Mann–Whitney U and Kolmogorov–Smirnov tests with an overlaid KDE plot annotated with group medians, the classification threshold, p-values, and misclassified-variant callouts
+- Implemented the logistic-regression validation (aim4/02_logistic_regression.py) using Leave-One-Out cross-validation (appropriate for the small N), reporting threshold-free metrics (AUROC, Average Precision) alongside ROC/PR curves and a confusion matrix with the 0.5 operating point marked
 
 ** Spencer Cha — Machine Learning Model training, evaluation, and analysis
 
