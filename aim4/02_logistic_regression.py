@@ -62,6 +62,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 COL_PATH = "#2aa8fd"
 COL_BEN  = "#57a774"
 sns.set_style("whitegrid")
+plt.rcParams.update({"xtick.labelsize": 13, "ytick.labelsize": 13})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -249,17 +250,17 @@ def plot_confusion_matrix(m: dict, subtitle: str, out_path: Path) -> None:
             pct   = cm_norm[i, j] * 100
             color = "white" if cm_norm[i, j] > 0.6 else "black"
             ax.text(j + 0.5, i + 0.5, f"{count}\n({pct:.0f}%)",
-                    ha="center", va="center", fontsize=13, fontweight="bold",
+                    ha="center", va="center", fontsize=16, fontweight="bold",
                     color=color)
 
     n_correct = m["tp"] + m["tn"]
-    ax.set_xlabel("Predicted label", fontsize=11)
-    ax.set_ylabel("True ClinVar label", fontsize=11)
+    ax.set_xlabel("Predicted label", fontsize=14)
+    ax.set_ylabel("True ClinVar label", fontsize=14)
     ax.set_title(
         f"Confusion Matrix — Logistic Regression (LOO-CV)\n"
         f"{subtitle}  |  N = {n_total}  |  "
         f"Accuracy = {n_correct}/{n_total}",
-        fontsize=11, fontweight="bold"
+        fontsize=14, fontweight="bold"
     )
     plt.tight_layout()
     fig.savefig(out_path, dpi=300, bbox_inches="tight")
@@ -296,14 +297,14 @@ ax.scatter(roc_fpr_op, roc_tpr_op, color="#d62728", s=90, zorder=6,
            label=f"Operating point @ 0.5 cutoff "
                  f"(sens {roc_tpr_op:.2f}, spec {m_default['specificity']:.2f})")
 
-ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=11)
-ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=11)
+ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=14)
+ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=14)
 ax.set_title(
     f"ROC Curve — Logistic Regression (LOO-CV)\n"
     f"BRCA1 ClinVar Variants  (N = {n_total})",
-    fontsize=12, fontweight="bold"
+    fontsize=16, fontweight="bold"
 )
-ax.legend(fontsize=9, loc="lower right")
+ax.legend(fontsize=12, loc="lower right")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
@@ -341,14 +342,14 @@ ax.scatter(pr_recall_op, pr_precision_op, color="#d62728", s=90, zorder=6,
            label=f"Operating point @ 0.5 cutoff "
                  f"(recall {pr_recall_op:.2f}, prec {pr_precision_op:.2f})")
 
-ax.set_xlabel("Recall (Sensitivity)", fontsize=11)
-ax.set_ylabel("Precision (PPV)", fontsize=11)
+ax.set_xlabel("Recall (Sensitivity)", fontsize=14)
+ax.set_ylabel("Precision (PPV)", fontsize=14)
 ax.set_title(
     f"Precision-Recall Curve — Logistic Regression (LOO-CV)\n"
     f"BRCA1 ClinVar Variants  (N = {n_total})",
-    fontsize=12, fontweight="bold"
+    fontsize=16, fontweight="bold"
 )
-ax.legend(fontsize=9, loc="lower left")
+ax.legend(fontsize=12, loc="lower left")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 

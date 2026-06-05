@@ -181,6 +181,7 @@ print(f"\nStats saved → {stats_path}")
 # ══════════════════════════════════════════════════════════════════════════════
 
 sns.set_style("whitegrid")
+plt.rcParams.update({"xtick.labelsize": 13, "ytick.labelsize": 13})
 fig, ax = plt.subplots(figsize=(9, 5))
 
 # KDE curves
@@ -202,9 +203,9 @@ ax.axvline(THRESHOLD, color="#555555", linestyle=":", linewidth=2.0,
 # Annotate medians
 ylim = ax.get_ylim()
 ax.text(path_med - 0.01, ylim[1] * 0.92, f"median\n{path_med:.3f}",
-        color=COL_PATH, fontsize=8, ha="right", va="top")
+        color=COL_PATH, fontsize=11, ha="right", va="top")
 ax.text(ben_med + 0.01, ylim[1] * 0.92, f"median\n{ben_med:.3f}",
-        color=COL_BEN, fontsize=8, ha="left", va="top")
+        color=COL_BEN, fontsize=11, ha="left", va="top")
 
 # Annotate misclassified variants (derived from the threshold, not hardcoded).
 # To avoid clutter on the larger test set, label individually only when there
@@ -215,13 +216,13 @@ if len(misclassified) > 0 and len(misclassified) <= 4:
             f"{r.variant}\n({r.clinvar_label}, misclassified)",
             xy=(r.pred_score, y_min + (ylim[1] - y_min) * 0.05),
             xytext=(r.pred_score - 0.35, ylim[1] * (0.45 - 0.12 * i)),
-            fontsize=8, color="#333333",
+            fontsize=11, color="#333333",
             arrowprops=dict(arrowstyle="->", color="#333333", lw=1.2),
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85),
         )
 elif len(misclassified) > 4:
     ax.text(0.03, 0.55, f"{len(misclassified)} misclassified\nat threshold",
-            transform=ax.transAxes, fontsize=8, color="#333333",
+            transform=ax.transAxes, fontsize=11, color="#333333",
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#aaaaaa", alpha=0.85))
 
 # p-value annotation box
@@ -230,15 +231,15 @@ pval_text = (
     f"KS test:         p = {ks_p:.4g}"
 )
 ax.text(0.97, 0.97, pval_text, transform=ax.transAxes,
-        fontsize=9, va="top", ha="right",
+        fontsize=12, va="top", ha="right",
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc", alpha=0.9))
 
-ax.set_xlabel("Predicted Score  (lower = more loss-of-function)", fontsize=11)
-ax.set_ylabel("Density", fontsize=11)
+ax.set_xlabel("Predicted Score  (lower = more loss-of-function)", fontsize=14)
+ax.set_ylabel("Density", fontsize=14)
 ax.set_title(
     "Distribution of Predicted Scores by ClinVar Classification\n"
     f"BRCA1 Missense Variants  (N = {n_total})",
-    fontsize=12, fontweight="bold"
+    fontsize=16, fontweight="bold"
 )
 
 # Legend
@@ -250,7 +251,7 @@ legend_handles = [
     plt.Line2D([0], [0], color="grey", linestyle="--", linewidth=1.4,
                label="Group medians"),
 ]
-ax.legend(handles=legend_handles, fontsize=9, loc="upper left")
+ax.legend(handles=legend_handles, fontsize=12, loc="upper left")
 
 plt.tight_layout()
 plot_path = OUT_DIR / "kde_distribution.png"
