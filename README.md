@@ -179,7 +179,7 @@ MAVE scores + AlphaMissense ─────────────────�
   - Joined structural and biochemical features with two energy stability metrics from EvoEF2
   - Dropped low-variance columns for data pruning
 
-** Mia Dittrich
+** Mia Dittrich - Variant Construction and External Validation
 
 - Wrote the mutagenesis script that parses three-letter HGVS notation, validates each position against the wild-type residue, inserts the selected missense mutations into the full-length WT BRCA1 sequence, and writes a FASTA for 3D structure production
 - Folded variant sequences in AlphaFold 3 to prepare for structure feature extraction
