@@ -194,3 +194,5 @@ MAVE scores + AlphaMissense ─────────────────�
 - Validated feature importance by calculating SHAP values and performing feature ablation and feature group combinatorial ablation
 - Created VUS / CIP variant sets and analyzed according to external ClinVar validation
 
+Note: This code was generated with the assistance of an AI (Anthropic Claude)
+
