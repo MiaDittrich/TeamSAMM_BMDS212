@@ -184,8 +184,8 @@ metrics_text = textwrap.dedent(f"""
     ------
     Logistic regression (L2 penalty, C=1.0) with Leave-One-Out cross-validation.
     LOO-CV produces one unbiased predicted probability per variant, avoiding
-    overfitting on the small N=20 dataset. All metrics below are computed from
-    these out-of-fold probabilities.
+    overfitting on the small N={n_total} dataset. All metrics below are computed
+    from these out-of-fold probabilities.
 
     Model coefficients (fit on full data)
     --------------------------------------
@@ -200,7 +200,7 @@ metrics_text = textwrap.dedent(f"""
     Average Precision (AP) : {ap:.4f}
     These depend only on how well the probabilities rank the two classes,
     not on any cutoff. AUROC = 1.0 means the scores separate pathogenic from
-    benign perfectly by rank — i.e. SOME threshold classifies all 20 correctly.
+    benign perfectly by rank — i.e. SOME threshold classifies all {n_total} correctly.
 
     Threshold-dependent classification metrics
     ------------------------------------------
@@ -307,10 +307,7 @@ ax.legend(fontsize=9, loc="lower right")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
-# AUROC text box (top-left, clear of the lower-right legend)
-ax.text(0.03, 0.04, f"AUROC = {auroc:.3f}", transform=ax.transAxes,
-        fontsize=11, va="bottom", ha="left", fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
+# (AUROC value is shown in the legend; no separate text box to avoid redundancy.)
 
 plt.tight_layout()
 roc_path = OUT_DIR / "roc_curve.png"
@@ -355,10 +352,7 @@ ax.legend(fontsize=9, loc="lower left")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
-# AP text box (lower-right, clear of the lower-left legend)
-ax.text(0.97, 0.04, f"Average Precision = {ap:.3f}", transform=ax.transAxes,
-        fontsize=11, va="bottom", ha="right", fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
+# (AP value is shown in the legend; no separate text box to avoid redundancy.)
 
 plt.tight_layout()
 pr_path = OUT_DIR / "precision_recall_curve.png"
