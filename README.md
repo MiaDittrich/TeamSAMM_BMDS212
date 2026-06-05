@@ -149,4 +149,11 @@ MAVE scores + AlphaMissense ─────────────────�
 - Folding variant sequences in AlphaFold 3 to prepare for structural feature extraction
 - External validation of predicted pathogenicity scores using held-out ClinVar dataset 
 
-** Spencer Cha
+** Spencer Cha — Machine Learning Model training, evaluation, and analysis
+
+- Folded some variant sequences in AlphaFold 3 to prepare for structure feature extraction
+- Created machine learning model scripts to test different model architectures and label strategies
+- Evaluated machine learning model with cross validation metrics and optimized model performance through hyperparameter tuning
+- Validated feature importance by calculating SHAP values and performing feature ablation and feature group combinatorial ablation
+- Created VUS / CIP variant sets and analyzed according to external ClinVar validation
+
