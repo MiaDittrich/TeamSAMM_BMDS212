@@ -62,6 +62,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 COL_PATH = "#2aa8fd"
 COL_BEN  = "#57a774"
 sns.set_style("whitegrid")
+plt.rcParams.update({"xtick.labelsize": 13, "ytick.labelsize": 13})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -184,8 +185,8 @@ metrics_text = textwrap.dedent(f"""
     ------
     Logistic regression (L2 penalty, C=1.0) with Leave-One-Out cross-validation.
     LOO-CV produces one unbiased predicted probability per variant, avoiding
-    overfitting on the small N=20 dataset. All metrics below are computed from
-    these out-of-fold probabilities.
+    overfitting on the small N={n_total} dataset. All metrics below are computed
+    from these out-of-fold probabilities.
 
     Model coefficients (fit on full data)
     --------------------------------------
@@ -200,7 +201,7 @@ metrics_text = textwrap.dedent(f"""
     Average Precision (AP) : {ap:.4f}
     These depend only on how well the probabilities rank the two classes,
     not on any cutoff. AUROC = 1.0 means the scores separate pathogenic from
-    benign perfectly by rank — i.e. SOME threshold classifies all 20 correctly.
+    benign perfectly by rank — i.e. SOME threshold classifies all {n_total} correctly.
 
     Threshold-dependent classification metrics
     ------------------------------------------
@@ -249,17 +250,17 @@ def plot_confusion_matrix(m: dict, subtitle: str, out_path: Path) -> None:
             pct   = cm_norm[i, j] * 100
             color = "white" if cm_norm[i, j] > 0.6 else "black"
             ax.text(j + 0.5, i + 0.5, f"{count}\n({pct:.0f}%)",
-                    ha="center", va="center", fontsize=13, fontweight="bold",
+                    ha="center", va="center", fontsize=16, fontweight="bold",
                     color=color)
 
     n_correct = m["tp"] + m["tn"]
-    ax.set_xlabel("Predicted label", fontsize=11)
-    ax.set_ylabel("True ClinVar label", fontsize=11)
+    ax.set_xlabel("Predicted label", fontsize=14)
+    ax.set_ylabel("True ClinVar label", fontsize=14)
     ax.set_title(
         f"Confusion Matrix — Logistic Regression (LOO-CV)\n"
         f"{subtitle}  |  N = {n_total}  |  "
         f"Accuracy = {n_correct}/{n_total}",
-        fontsize=11, fontweight="bold"
+        fontsize=14, fontweight="bold"
     )
     plt.tight_layout()
     fig.savefig(out_path, dpi=300, bbox_inches="tight")
@@ -296,21 +297,18 @@ ax.scatter(roc_fpr_op, roc_tpr_op, color="#d62728", s=90, zorder=6,
            label=f"Operating point @ 0.5 cutoff "
                  f"(sens {roc_tpr_op:.2f}, spec {m_default['specificity']:.2f})")
 
-ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=11)
-ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=11)
+ax.set_xlabel("False Positive Rate (1 − Specificity)", fontsize=14)
+ax.set_ylabel("True Positive Rate (Sensitivity)", fontsize=14)
 ax.set_title(
     f"ROC Curve — Logistic Regression (LOO-CV)\n"
     f"BRCA1 ClinVar Variants  (N = {n_total})",
-    fontsize=12, fontweight="bold"
+    fontsize=16, fontweight="bold"
 )
-ax.legend(fontsize=9, loc="lower right")
+ax.legend(fontsize=12, loc="lower right")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
-# AUROC text box (top-left, clear of the lower-right legend)
-ax.text(0.03, 0.04, f"AUROC = {auroc:.3f}", transform=ax.transAxes,
-        fontsize=11, va="bottom", ha="left", fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
+# (AUROC value is shown in the legend; no separate text box to avoid redundancy.)
 
 plt.tight_layout()
 roc_path = OUT_DIR / "roc_curve.png"
@@ -344,21 +342,18 @@ ax.scatter(pr_recall_op, pr_precision_op, color="#d62728", s=90, zorder=6,
            label=f"Operating point @ 0.5 cutoff "
                  f"(recall {pr_recall_op:.2f}, prec {pr_precision_op:.2f})")
 
-ax.set_xlabel("Recall (Sensitivity)", fontsize=11)
-ax.set_ylabel("Precision (PPV)", fontsize=11)
+ax.set_xlabel("Recall (Sensitivity)", fontsize=14)
+ax.set_ylabel("Precision (PPV)", fontsize=14)
 ax.set_title(
     f"Precision-Recall Curve — Logistic Regression (LOO-CV)\n"
     f"BRCA1 ClinVar Variants  (N = {n_total})",
-    fontsize=12, fontweight="bold"
+    fontsize=16, fontweight="bold"
 )
-ax.legend(fontsize=9, loc="lower left")
+ax.legend(fontsize=12, loc="lower left")
 ax.set_xlim(-0.02, 1.02)
 ax.set_ylim(-0.02, 1.05)
 
-# AP text box (lower-right, clear of the lower-left legend)
-ax.text(0.97, 0.04, f"Average Precision = {ap:.3f}", transform=ax.transAxes,
-        fontsize=11, va="bottom", ha="right", fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
+# (AP value is shown in the legend; no separate text box to avoid redundancy.)
 
 plt.tight_layout()
 pr_path = OUT_DIR / "precision_recall_curve.png"

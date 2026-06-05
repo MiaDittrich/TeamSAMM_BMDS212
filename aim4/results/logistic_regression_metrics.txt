@@ -10,8 +10,8 @@ Method
 ------
 Logistic regression (L2 penalty, C=1.0) with Leave-One-Out cross-validation.
 LOO-CV produces one unbiased predicted probability per variant, avoiding
-overfitting on the small N=20 dataset. All metrics below are computed from
-these out-of-fold probabilities.
+overfitting on the small N=28 dataset. All metrics below are computed
+from these out-of-fold probabilities.
 
 Model coefficients (fit on full data)
 --------------------------------------
@@ -26,7 +26,7 @@ AUROC                  : 1.0000
 Average Precision (AP) : 1.0000
 These depend only on how well the probabilities rank the two classes,
 not on any cutoff. AUROC = 1.0 means the scores separate pathogenic from
-benign perfectly by rank — i.e. SOME threshold classifies all 20 correctly.
+benign perfectly by rank — i.e. SOME threshold classifies all 28 correctly.
 
 Threshold-dependent classification metrics
 ------------------------------------------
